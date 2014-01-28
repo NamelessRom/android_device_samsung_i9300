@@ -22,6 +22,7 @@
 # RIL
 BOARD_PROVIDES_LIBRIL := true
 BOARD_MODEM_TYPE := xmm6262
+BOARD_KERNEL_CMDLINE         := androidboot.selinux=permissive
 TARGET_SPECIFIC_HEADER_PATH := device/samsung/i9300/include
 
 # Bluetooth
