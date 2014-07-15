@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <string-array name="maintainers" translatable="false">
+        <item>dhiru1602</item>
+    </string-array>
+
+    <add-resource type="string" name="maintainers_dhiru1602_name" />
+    <string name="maintainers_dhiru1602_name">Dheeraj CVR</string>
+    <add-resource type="string" name="maintainers_dhiru1602_github" />
+    <string name="maintainers_dhiru1602_github">https://github.com/dhiru1602</string>
+    <add-resource type="string" name="maintainers_dhiru1602_email" />
+    <string name="maintainers_dhiru1602_email">cvr.dheeraj@gmail.com</string>
+
+</resources>
