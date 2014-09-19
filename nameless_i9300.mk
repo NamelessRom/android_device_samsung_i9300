@@ -40,6 +40,9 @@ $(call inherit-product, vendor/nameless/config/common.mk)
 # Inherit from hardware-specific part of the product configuration
 $(call inherit-product, device/samsung/i9300/i9300.mk)
 
+# Configure dalvik heap
+$(call inherit-product, frameworks/native/build/phone-xhdpi-1024-dalvik-heap.mk)
+
 # Discard inherited values and use our own instead.
 PRODUCT_NAME := nameless_i9300
 PRODUCT_DEVICE := i9300
