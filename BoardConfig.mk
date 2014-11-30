@@ -22,8 +22,7 @@
 # RIL
 BOARD_PROVIDES_LIBRIL := true
 BOARD_MODEM_TYPE := xmm6262
-BOARD_KERNEL_CMDLINE         := androidboot.selinux=permissive
-TARGET_SPECIFIC_HEADER_PATH := device/samsung/i9300/include
+BOARD_RIL_CLASS := ../../../hardware/samsung/ril
 
 # Bluetooth
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/samsung/i9300/bluetooth
@@ -31,6 +30,7 @@ BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/samsung/i9300/bluetooth
 # Kernel
 TARGET_KERNEL_SOURCE := kernel/samsung/smdk4412
 TARGET_KERNEL_CONFIG := custom_i9300_defconfig
+BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
 
 # Blobs
 COMMON_GLOBAL_CFLAGS += -DNEEDS_VECTORIMPL_SYMBOLS
@@ -41,6 +41,9 @@ RECOVERY_FSTAB_VERSION := 2
 
 # assert
 TARGET_OTA_ASSERT_DEVICE := m0,i9300,GT-I9300
+
+# own headers
+TARGET_SPECIFIC_HEADER_PATH := device/samsung/i9300/include
 
 # inherit from the proprietary version
 -include vendor/samsung/i9300/BoardConfigVendor.mk
