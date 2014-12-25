@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Paul Kocialkowski
+ * Copyright (C) 2013 Paul Kocialkowski <contact@paulk.fr>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
 
 #include <stdint.h>
 #include <poll.h>
-
 #include <linux/input.h>
 
 #include <hardware/sensors.h>
@@ -35,12 +34,15 @@ struct exynos_sensors_handlers {
 	char *name;
 	int handle;
 
-	int (*init)(struct exynos_sensors_handlers *handlers, struct exynos_sensors_device *device);
+	int (*init)(struct exynos_sensors_handlers *handlers,
+		struct exynos_sensors_device *device);
 	int (*deinit)(struct exynos_sensors_handlers *handlers);
 	int (*activate)(struct exynos_sensors_handlers *handlers);
 	int (*deactivate)(struct exynos_sensors_handlers *handlers);
-	int (*set_delay)(struct exynos_sensors_handlers *handlers, long int delay);
-	int (*get_data)(struct exynos_sensors_handlers *handlers, struct sensors_event_t *event);
+	int (*set_delay)(struct exynos_sensors_handlers *handlers,
+		long int delay);
+	int (*get_data)(struct exynos_sensors_handlers *handlers,
+		struct sensors_event_t *event);
 
 	int activated;
 	int needed;
@@ -62,8 +64,10 @@ struct exynos_sensors_device {
 extern struct exynos_sensors_handlers *exynos_sensors_handlers[];
 extern int exynos_sensors_handlers_count;
 
-int exynos_sensors_activate(struct sensors_poll_device_t *dev, int handle, int enabled);
-int exynos_sensors_set_delay(struct sensors_poll_device_t *dev, int handle, int64_t ns);
+int exynos_sensors_activate(struct sensors_poll_device_t *dev, int handle,
+	int enabled);
+int exynos_sensors_set_delay(struct sensors_poll_device_t *dev, int handle,
+	int64_t ns);
 int exynos_sensors_poll(struct sensors_poll_device_t *dev,
 	struct sensors_event_t* data, int count);
 
@@ -80,8 +84,8 @@ int input_open(char *name);
 int sysfs_path_prefix(char *name, char *path_prefix);
 int sysfs_value_read(char *path);
 int sysfs_value_write(char *path, int value);
-int sysfs_string_read(char *path, char *buffer, int length);
-int sysfs_string_write(char *path, char *buffer, int length);
+int sysfs_string_read(char *path, char *buffer, size_t length);
+int sysfs_string_write(char *path, char *buffer, size_t length);
 
 /*
  * Sensors
