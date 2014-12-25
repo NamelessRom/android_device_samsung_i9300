@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Paul Kocialkowski
+ * Copyright (C) 2013 Paul Kocialkowski <contact@paulk.fr>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,13 +21,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <poll.h>
-
-
-
 #include <sys/select.h>
-
-
-
 #include <hardware/sensors.h>
 #include <hardware/hardware.h>
 
@@ -50,17 +44,17 @@ struct sensor_t exynos_sensors[] = {
 	{ "Orientation Sensor", "Exynos Sensors", 1, SENSOR_TYPE_ORIENTATION,
 		SENSOR_TYPE_ORIENTATION, 360.0f, 0.1f, 0.0f, 10000, 0, 0, 0, 0, 0,
 		SENSOR_FLAG_ON_CHANGE_MODE, {}, },
-	{ "CM36651 Light Sensor", "Capella", 1, SENSOR_TYPE_LIGHT,
+	{ "CM36651 Light Sensor", "Capella Microsystems", 1, SENSOR_TYPE_LIGHT,
 		SENSOR_TYPE_LIGHT, 121240.0f, 1.0f, 0.2f, 0, 0, 0, 0, 0, 0,
 		SENSOR_FLAG_ON_CHANGE_MODE, {}, },
-	{ "CM36651 Proximity Sensor", "Capella", 1, SENSOR_TYPE_PROXIMITY,
+	{ "CM36651 Proximity Sensor", "Capella Microsystems", 1, SENSOR_TYPE_PROXIMITY,
 		SENSOR_TYPE_PROXIMITY, 8.0f, 8.0f, 1.3f, 0, 0, 0, 0, 0, 0,
 		SENSOR_FLAG_WAKE_UP | SENSOR_FLAG_ON_CHANGE_MODE, {}, },
 	{ "LSM330DLC Gyroscope Sensor", "STMicroelectronics", 1, SENSOR_TYPE_GYROSCOPE,
-		SENSOR_TYPE_GYROSCOPE, 8.73f, 0.00031f, 6.1f, 5000, 0, 0, 0, 0, 0,
+		SENSOR_TYPE_GYROSCOPE, 500.0f * (3.1415926535f / 180.0f), (70.0f / 4000.0f) * (3.1415926535f / 180.0f), 6.1f, 5000, 0, 0, 0, 0, 0,
 		SENSOR_FLAG_ON_CHANGE_MODE, {}, },
 	{ "LPS331AP Pressure Sensor", "STMicroelectronics", 1, SENSOR_TYPE_PRESSURE,
-		SENSOR_TYPE_PRESSURE, 1260.0f, 0.00024f, 0.045f, 40000, 0, 0, 0, 0, 20000,
+		SENSOR_TYPE_PRESSURE, 1260.0f, 1.0f / 4096, 0.045f, 40000, 0, 0, 0, 0, 20000,
 		SENSOR_FLAG_CONTINUOUS_MODE, {}, },
 };
 
@@ -83,7 +77,8 @@ int exynos_sensors_handlers_count = sizeof(exynos_sensors_handlers) /
  * Exynos Sensors
  */
 
-int exynos_sensors_activate(struct sensors_poll_device_t *dev, int handle, int enabled)
+int exynos_sensors_activate(struct sensors_poll_device_t *dev, int handle,
+	int enabled)
 {
 	struct exynos_sensors_device *device;
 	int i;
@@ -122,7 +117,8 @@ int exynos_sensors_activate(struct sensors_poll_device_t *dev, int handle, int e
 	return -1;
 }
 
-int exynos_sensors_set_delay(struct sensors_poll_device_t *dev, int handle, int64_t ns)
+int exynos_sensors_set_delay(struct sensors_poll_device_t *dev, int handle,
+	int64_t ns)
 {
 	struct exynos_sensors_device *device;
 	int i;

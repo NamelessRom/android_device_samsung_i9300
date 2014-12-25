@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Paul Kocialkowski
+ * Copyright (C) 2013 Paul Kocialkowski <contact@paulk.fr>
  * Copyright (C) 2012 Asahi Kasei Microdevices Corporation, Japan
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,10 +21,6 @@
 #include <stdint.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <sys/types.h>
-#include <linux/ioctl.h>
-#include <linux/uinput.h>
-#include <linux/input.h>
 
 #include <hardware/sensors.h>
 #include <hardware/hardware.h>
@@ -33,8 +29,8 @@
 #include <utils/Log.h>
 
 #include "exynos_sensors.h"
-#include "akm8975.h"
-#include "akm8975-reg.h"
+#include "ak8975.h"
+#include "ak8975-reg.h"
 
 #include <AKFS_Compass.h>
 #include <AKFS_FileIO.h>
@@ -57,19 +53,19 @@ struct akm8975_data {
 	int thread_continue;
 };
 
-int akfs_get_magnetic_field(struct akm8975_data *akm8975_data, short *mag_data)
+int akfs_get_magnetic_field(struct akm8975_data *akm8975_data, short *magnetic_data)
 {
 	AK8975PRMS *params;
 	int rc;
 
-	if (akm8975_data == NULL || mag_data == NULL)
+	if (akm8975_data == NULL || magnetic_data == NULL)
 		return -EINVAL;
 
 	params = &akm8975_data->akfs_params;
 
 	/* Decomposition */
 	/* Sensitivity adjustment, i.e. multiply ASA, is done in this function. */
-	rc = AKFS_DecompAK8975(mag_data, 1, &params->mi_asa, AKFS_HDATA_SIZE, params->mfv_hdata);
+	rc = AKFS_DecompAK8975(magnetic_data, 1, &params->mi_asa, AKFS_HDATA_SIZE, params->mfv_hdata);
 	if (rc == AKFS_ERROR) {
 		ALOGE("Failed to decomp!");
 		return -1;
@@ -153,7 +149,7 @@ void *akm8975_thread(void *thread_data)
 	struct input_event event;
 	struct timeval time;
 	char i2c_data[SENSOR_DATA_SIZE] = { 0 };
-	short mag_data[3];
+	short magnetic_data[3];
 	short mode;
 	long int before, after;
 	int diff;
@@ -211,11 +207,11 @@ void *akm8975_thread(void *thread_data)
 				continue;
 			}
 
-			mag_data[0] = (short) (i2c_data[2] << 8) | (i2c_data[1]);
-			mag_data[1] = (short) (i2c_data[4] << 8) | (i2c_data[3]);
-			mag_data[2] = (short) (i2c_data[6] << 8) | (i2c_data[5]);
+			magnetic_data[0] = (short) (i2c_data[2] << 8) | (i2c_data[1]);
+			magnetic_data[1] = (short) (i2c_data[4] << 8) | (i2c_data[3]);
+			magnetic_data[2] = (short) (i2c_data[6] << 8) | (i2c_data[5]);
 
-			rc = akfs_get_magnetic_field(data, (short *) &mag_data);
+			rc = akfs_get_magnetic_field(data, (short *) &magnetic_data);
 			if (rc < 0) {
 				ALOGE("%s: Unable to get AKFS magnetic field", __func__);
 				continue;
@@ -248,7 +244,7 @@ int akm8975_init(struct exynos_sensors_handlers *handlers,
 {
 	struct akm8975_data *data = NULL;
 	pthread_attr_t thread_attr;
-	char i2c_data[4] = { 0 };
+	char i2c_data[RWBUF_SIZE] = { 0 };
 	short mode;
 	int device_fd = -1;
 	int uinput_fd = -1;
@@ -258,7 +254,7 @@ int akm8975_init(struct exynos_sensors_handlers *handlers,
 
 	ALOGD("%s(%p, %p)", __func__, handlers, device);
 
-	if (handlers == NULL)
+	if (handlers == NULL || device == NULL)
 		return -EINVAL;
 
 	data = (struct akm8975_data *) calloc(1, sizeof(struct akm8975_data));
@@ -295,7 +291,7 @@ int akm8975_init(struct exynos_sensors_handlers *handlers,
 	i2c_data[1] = AK8975_FUSE_ASAY;
 	rc = ioctl(device_fd, ECS_IOCTL_READ, &i2c_data);
 	if (rc < 0) {
-		ALOGE("%s: Unable to set read akm8975 FUSE data", __func__);
+		ALOGE("%s: Unable to read akm8975 FUSE data", __func__);
 		goto error;
 	}
 
@@ -312,7 +308,7 @@ int akm8975_init(struct exynos_sensors_handlers *handlers,
 	i2c_data[1] = AK8975_REG_WIA;
 	rc = ioctl(device_fd, ECS_IOCTL_READ, &i2c_data);
 	if (rc < 0) {
-		ALOGE("%s: Unable to set read akm8975 FUSE data", __func__);
+		ALOGE("%s: Unable to read akm8975 FUSE data", __func__);
 		goto error;
 	}
 
@@ -347,7 +343,7 @@ int akm8975_init(struct exynos_sensors_handlers *handlers,
 
 	rc = pthread_create(&data->thread, &thread_attr, akm8975_thread, (void *) handlers);
 	if (rc < 0) {
-		ALOGE("%s: Unable to create acceleration thread", __func__);
+		ALOGE("%s: Unable to create akm8975 thread", __func__);
 		pthread_mutex_destroy(&data->mutex);
 		goto error;
 	}
@@ -436,7 +432,7 @@ int akm8975_activate(struct exynos_sensors_handlers *handlers)
 	data = (struct akm8975_data *) handlers->data;
 	akfs_params = &data->akfs_params;
 
-	/* Read setting files from a file */
+	/* Read settings from a file */
 	rc = AKFS_LoadParameters(akfs_params, AKFS_CONFIG_PATH);
 	if (rc != AKM_SUCCESS)
 		ALOGE("%s: Unable to read AKFS parameters", __func__);
@@ -464,7 +460,9 @@ int akm8975_deactivate(struct exynos_sensors_handlers *handlers)
 	AK8975PRMS *akfs_params;
 	int device_fd;
 	short mode;
+	int empty;
 	int rc;
+	int i;
 
 	ALOGD("%s(%p)", __func__, handlers);
 
@@ -476,12 +474,23 @@ int akm8975_deactivate(struct exynos_sensors_handlers *handlers)
 
 	device_fd = data->device_fd;
 	if (device_fd < 0)
-		return -EINVAL;
+		return -1;
 
-	/* Write setting files to a file */
-	rc = AKFS_SaveParameters(akfs_params, AKFS_CONFIG_PATH);
-	if (rc != AKM_SUCCESS)
-		ALOGE("%s: Unable to write AKFS parameters", __func__);
+	empty = 1;
+
+	for (i = 0; i < 3; i++) {
+		if (akfs_params->mfv_ho.v[i] != 0) {
+			empty = 0;
+			break;
+		}
+	}
+
+	if (!empty) {
+		/* Write settings to a file */
+		rc = AKFS_SaveParameters(akfs_params, AKFS_CONFIG_PATH);
+		if (rc != AKM_SUCCESS)
+			ALOGE("%s: Unable to write AKFS parameters", __func__);
+	}
 
 	mode = AK8975_MODE_POWER_DOWN;
 	rc = ioctl(device_fd, ECS_IOCTL_SET_MODE, &mode);
@@ -531,8 +540,9 @@ int akm8975_get_data(struct exynos_sensors_handlers *handlers,
 
 	input_fd = handlers->poll_fd;
 	if (input_fd < 0)
-		return -EINVAL;
+		return -1;
 
+	memset(event, 0, sizeof(struct sensors_event_t));
 	event->version = sizeof(struct sensors_event_t);
 	event->sensor = handlers->handle;
 	event->type = handlers->handle;
@@ -569,7 +579,6 @@ int akm8975_get_data(struct exynos_sensors_handlers *handlers,
 
 	return 0;
 }
-
 
 struct exynos_sensors_handlers akm8975 = {
 	.name = "AKM8975",
