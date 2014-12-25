@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Paul Kocialkowski
+ * Copyright (C) 2013 Paul Kocialkowski <contact@paulk.fr>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -85,12 +85,12 @@ void orientation_calculate(sensors_vec_t *a, sensors_vec_t *m, sensors_vec_t *o)
 	x = m->x * sinp * sinr + m->y * cosp + m->z * sinp * cosr;
 	azimuth = atan2f(y, x);
 
-	o->x = rad2deg(azimuth);
-	o->y = rad2deg(pitch);
-	o->z = rad2deg(roll);
+	o->azimuth = rad2deg(azimuth);
+	o->pitch = rad2deg(pitch);
+	o->roll = rad2deg(roll);
 
-	if (o->x < 0)
-		o->x += 360.0f;
+	if (o->azimuth < 0)
+		o->azimuth += 360.0f;
 }
 
 void *orientation_thread(void *thread_data)
@@ -127,11 +127,11 @@ void *orientation_thread(void *thread_data)
 
 			orientation_calculate(&data->acceleration, &data->magnetic, &data->orientation);
 
-			input_event_set(&event, EV_REL, REL_X, (int) (data->orientation.x * 1000));
+			input_event_set(&event, EV_REL, REL_X, (int) (data->orientation.azimuth * 1000));
 			write(uinput_fd, &event, sizeof(event));
-			input_event_set(&event, EV_REL, REL_Y, (int) (data->orientation.y * 1000));
+			input_event_set(&event, EV_REL, REL_Y, (int) (data->orientation.pitch * 1000));
 			write(uinput_fd, &event, sizeof(event));
-			input_event_set(&event, EV_REL, REL_Z, (int) (data->orientation.z * 1000));
+			input_event_set(&event, EV_REL, REL_Z, (int) (data->orientation.roll * 1000));
 			write(uinput_fd, &event, sizeof(event));
 			input_event_set(&event, EV_SYN, 0, 0);
 			write(uinput_fd, &event, sizeof(event));
@@ -346,7 +346,8 @@ int orientation_deactivate(struct exynos_sensors_handlers *handlers)
 	return 0;
 }
 
-int orientation_set_delay(struct exynos_sensors_handlers *handlers, long int delay)
+int orientation_set_delay(struct exynos_sensors_handlers *handlers,
+	long int delay)
 {
 	struct orientation_data *data;
 
@@ -379,22 +380,20 @@ float orientation_convert(int value)
 int orientation_get_data(struct exynos_sensors_handlers *handlers,
 	struct sensors_event_t *event)
 {
-	struct orientation_data *data;
 	struct input_event input_event;
 	int input_fd = -1;
 	int rc;
 
 //	ALOGD("%s(%p, %p)", __func__, handlers, event);
 
-	if (handlers == NULL || handlers->data == NULL || event == NULL)
+	if (handlers == NULL || event == NULL)
 		return -EINVAL;
-
-	data = (struct orientation_data *) handlers->data;
 
 	input_fd = handlers->poll_fd;
 	if (input_fd < 0)
 		return -EINVAL;
 
+	memset(event, 0, sizeof(struct sensors_event_t));
 	event->version = sizeof(struct sensors_event_t);
 	event->sensor = handlers->handle;
 	event->type = handlers->handle;
@@ -409,13 +408,13 @@ int orientation_get_data(struct exynos_sensors_handlers *handlers,
 		if (input_event.type == EV_REL) {
 			switch (input_event.code) {
 				case REL_X:
-					event->orientation.x = orientation_convert(input_event.value);
+					event->orientation.azimuth = orientation_convert(input_event.value);
 					break;
 				case REL_Y:
-					event->orientation.y = orientation_convert(input_event.value);
+					event->orientation.pitch = orientation_convert(input_event.value);
 					break;
 				case REL_Z:
-					event->orientation.z = orientation_convert(input_event.value);
+					event->orientation.roll = orientation_convert(input_event.value);
 					break;
 				default:
 					continue;
