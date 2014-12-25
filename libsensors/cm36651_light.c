@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Paul Kocialkowski
+ * Copyright (C) 2013 Paul Kocialkowski <contact@paulk.fr>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <math.h>
 #include <sys/types.h>
 #include <linux/ioctl.h>
 #include <linux/input.h>
@@ -103,7 +104,6 @@ int cm36651_light_deinit(struct exynos_sensors_handlers *handlers)
 	return 0;
 }
 
-
 int cm36651_light_activate(struct exynos_sensors_handlers *handlers)
 {
 	struct cm36651_light_data *data;
@@ -171,19 +171,15 @@ int cm36651_light_set_delay(struct exynos_sensors_handlers *handlers, long int d
 	return 0;
 }
 
-float cm36651_light_convert(int red, int green, int blue, int white)
+float cm36651_light_convert(int value)
 {
-	return (float) white * 1.7f - 0.5f;
+	return (float) value * 1.7f - 0.5f;
 }
 
 int cm36651_light_get_data(struct exynos_sensors_handlers *handlers,
 	struct sensors_event_t *event)
 {
 	struct input_event input_event;
-	int red = 0;
-	int green = 0;
-	int blue = 0;
-	int white = 0;
 	int input_fd;
 	int rc;
 
@@ -196,6 +192,7 @@ int cm36651_light_get_data(struct exynos_sensors_handlers *handlers,
 	if (input_fd < 0)
 		return -EINVAL;
 
+	memset(event, 0, sizeof(struct sensors_event_t));
 	event->version = sizeof(struct sensors_event_t);
 	event->sensor = handlers->handle;
 	event->type = handlers->handle;
@@ -206,21 +203,13 @@ int cm36651_light_get_data(struct exynos_sensors_handlers *handlers,
 			break;
 
 		if (input_event.type == EV_REL) {
-			if (input_event.code == REL_X)
-				red = input_event.value;
-			if (input_event.code == REL_Y)
-				green = input_event.value;
-			if (input_event.code == REL_Z)
-				blue = input_event.value;
 			if (input_event.code == REL_MISC)
-				white = input_event.value;
+				event->light = cm36651_light_convert(input_event.value);
 		} else if (input_event.type == EV_SYN) {
 			if (input_event.code == SYN_REPORT)
 				event->timestamp = input_timestamp(&input_event);
 		}
 	} while (input_event.type != EV_SYN);
-
-	event->distance = cm36651_light_convert(red, green, blue, white);
 
 	return 0;
 }
