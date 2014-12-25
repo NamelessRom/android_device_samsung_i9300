@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Paul Kocialkowski
+ * Copyright (C) 2013 Paul Kocialkowski <contact@paulk.fr>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
 
 #include <stdint.h>
 #include <poll.h>
-
 #include <linux/input.h>
 
 #include <hardware/sensors.h>
@@ -64,8 +63,7 @@ extern int exynos_sensors_handlers_count;
 
 int exynos_sensors_activate(struct sensors_poll_device_t *dev, int handle, int enabled);
 int exynos_sensors_set_delay(struct sensors_poll_device_t *dev, int handle, int64_t ns);
-int exynos_sensors_poll(struct sensors_poll_device_t *dev,
-	struct sensors_event_t* data, int count);
+int exynos_sensors_poll(struct sensors_poll_device_t *dev, struct sensors_event_t* data, int count);
 
 /*
  * Input
@@ -80,8 +78,8 @@ int input_open(char *name);
 int sysfs_path_prefix(char *name, char *path_prefix);
 int sysfs_value_read(char *path);
 int sysfs_value_write(char *path, int value);
-int sysfs_string_read(char *path, char *buffer, int length);
-int sysfs_string_write(char *path, char *buffer, int length);
+int sysfs_string_read(char *path, char *buffer, size_t length);
+int sysfs_string_write(char *path, char *buffer, size_t length);
 
 /*
  * Sensors

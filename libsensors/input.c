@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Paul Kocialkowski
+ * Copyright (C) 2013 Paul Kocialkowski <contact@paulk.fr>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -276,12 +276,12 @@ complete:
 	return rc;
 }
 
-int sysfs_string_read(char *path, char *buffer, int length)
+int sysfs_string_read(char *path, char *buffer, size_t length)
 {
 	int fd = -1;
 	int rc;
 
-	if (path == NULL || buffer == NULL || length <= 0)
+	if (path == NULL || buffer == NULL || length == 0)
 		return -1;
 
 	fd = open(path, O_RDONLY);
@@ -305,12 +305,12 @@ complete:
 	return rc;
 }
 
-int sysfs_string_write(char *path, char *buffer, int length)
+int sysfs_string_write(char *path, char *buffer, size_t length)
 {
 	int fd = -1;
 	int rc;
 
-	if (path == NULL || buffer == NULL || length <= 0)
+	if (path == NULL || buffer == NULL || length == 0)
 		return -1;
 
 	fd = open(path, O_WRONLY);
