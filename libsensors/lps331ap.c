@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Paul Kocialkowski
+ * Copyright (C) 2013 Paul Kocialkowski <contact@paulk.fr>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +20,9 @@
 #include <stdint.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <math.h>
 #include <sys/types.h>
 #include <linux/ioctl.h>
-#include <linux/uinput.h>
 #include <linux/input.h>
 
 #include <hardware/sensors.h>
@@ -104,7 +104,6 @@ int lps331ap_deinit(struct exynos_sensors_handlers *handlers)
 	return 0;
 }
 
-
 int lps331ap_activate(struct exynos_sensors_handlers *handlers)
 {
 	struct lps331ap_data *data;
@@ -154,6 +153,7 @@ int lps331ap_deactivate(struct exynos_sensors_handlers *handlers)
 int lps331ap_set_delay(struct exynos_sensors_handlers *handlers, long int delay)
 {
 	struct lps331ap_data *data;
+	int d;
 	int rc;
 
 	ALOGD("%s(%p, %ld)", __func__, handlers, delay);
@@ -163,7 +163,12 @@ int lps331ap_set_delay(struct exynos_sensors_handlers *handlers, long int delay)
 
 	data = (struct lps331ap_data *) handlers->data;
 
-	rc = sysfs_value_write(data->path_delay, (int) delay / 1000000);
+	if (delay < 10000000)
+		d = 10;
+	else
+		d = delay / 1000000;
+
+	rc = sysfs_value_write(data->path_delay, d);
 	if (rc < 0) {
 		ALOGE("%s: Unable to write sysfs value", __func__);
 		return -1;
@@ -174,7 +179,7 @@ int lps331ap_set_delay(struct exynos_sensors_handlers *handlers, long int delay)
 
 float lps331ap_convert(int value)
 {
-	return (float) value / 4096.0f;
+	return value / 4096.0f;
 }
 
 int lps331ap_get_data(struct exynos_sensors_handlers *handlers,
@@ -193,6 +198,7 @@ int lps331ap_get_data(struct exynos_sensors_handlers *handlers,
 	if (input_fd < 0)
 		return -EINVAL;
 
+	memset(event, 0, sizeof(struct sensors_event_t));
 	event->version = sizeof(struct sensors_event_t);
 	event->sensor = handlers->handle;
 	event->type = handlers->handle;
@@ -203,13 +209,22 @@ int lps331ap_get_data(struct exynos_sensors_handlers *handlers,
 			break;
 
 		if (input_event.type == EV_REL) {
-			if (input_event.code == REL_X)
-				event->pressure = lps331ap_convert(input_event.value);
+			switch (input_event.code) {
+				case REL_X:
+					event->pressure = lps331ap_convert(input_event.value);
+					break;
+				default:
+					continue;
+			}
 		} else if (input_event.type == EV_SYN) {
-			if (input_event.code == SYN_REPORT)
+			if (input_event.code == SYN_REPORT && event->pressure != 0) {
 				event->timestamp = input_timestamp(&input_event);
+				break;
+			} else {
+				return -1;
+			}
 		}
-	} while (input_event.type != EV_SYN);
+	} while (1);
 
 	return 0;
 }
