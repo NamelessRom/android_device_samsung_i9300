@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Paul Kocialkowski
+ * Copyright (C) 2013 Paul Kocialkowski <contact@paulk.fr>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -101,7 +101,6 @@ int cm36651_proximity_deinit(struct exynos_sensors_handlers *handlers)
 	return 0;
 }
 
-
 int cm36651_proximity_activate(struct exynos_sensors_handlers *handlers)
 {
 	struct cm36651_proximity_data *data;
@@ -157,7 +156,7 @@ int cm36651_proximity_set_delay(struct exynos_sensors_handlers *handlers, long i
 
 float cm36651_proximity_convert(int value)
 {
-	return (float) value * 8.0f;
+	return (float) value * 6.0f;
 }
 
 int cm36651_proximity_get_data(struct exynos_sensors_handlers *handlers,
@@ -176,6 +175,7 @@ int cm36651_proximity_get_data(struct exynos_sensors_handlers *handlers,
 	if (input_fd < 0)
 		return -EINVAL;
 
+	memset(event, 0, sizeof(struct sensors_event_t));
 	event->version = sizeof(struct sensors_event_t);
 	event->sensor = handlers->handle;
 	event->type = handlers->handle;

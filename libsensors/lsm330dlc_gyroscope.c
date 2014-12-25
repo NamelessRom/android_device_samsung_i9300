@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Paul Kocialkowski
+ * Copyright (C) 2013 Paul Kocialkowski <contact@paulk.fr>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +20,9 @@
 #include <stdint.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <math.h>
 #include <sys/types.h>
 #include <linux/ioctl.h>
-#include <linux/uinput.h>
 #include <linux/input.h>
 
 #include <hardware/sensors.h>
@@ -36,6 +36,8 @@
 struct lsm330dlc_gyroscope_data {
 	char path_enable[PATH_MAX];
 	char path_delay[PATH_MAX];
+
+	sensors_vec_t gyro;
 };
 
 int lsm330dlc_gyroscope_init(struct exynos_sensors_handlers *handlers,
@@ -103,7 +105,6 @@ int lsm330dlc_gyroscope_deinit(struct exynos_sensors_handlers *handlers)
 
 	return 0;
 }
-
 
 int lsm330dlc_gyroscope_activate(struct exynos_sensors_handlers *handlers)
 {
@@ -174,28 +175,36 @@ int lsm330dlc_gyroscope_set_delay(struct exynos_sensors_handlers *handlers, long
 
 float lsm330dlc_gyroscope_convert(int value)
 {
-	return ((float) value * 0.3054326f) / 1000.0f;
+	return value * (70.0f / 4000.0f) * (3.1415926535f / 180.0f);
 }
 
 int lsm330dlc_gyroscope_get_data(struct exynos_sensors_handlers *handlers,
 	struct sensors_event_t *event)
 {
+	struct lsm330dlc_gyroscope_data *data;
 	struct input_event input_event;
 	int input_fd;
 	int rc;
 
 //	ALOGD("%s(%p, %p)", __func__, handlers, event);
 
-	if (handlers == NULL || event == NULL)
+	if (handlers == NULL || handlers->data == NULL || event == NULL)
 		return -EINVAL;
+
+	data = (struct lsm330dlc_gyroscope_data *) handlers->data;
 
 	input_fd = handlers->poll_fd;
 	if (input_fd < 0)
 		return -EINVAL;
 
+	memset(event, 0, sizeof(struct sensors_event_t));
 	event->version = sizeof(struct sensors_event_t);
 	event->sensor = handlers->handle;
 	event->type = handlers->handle;
+
+	event->gyro.x = data->gyro.x;
+	event->gyro.y = data->gyro.y;
+	event->gyro.z = data->gyro.z;
 
 	do {
 		rc = read(input_fd, &input_event, sizeof(input_event));
@@ -205,13 +214,13 @@ int lsm330dlc_gyroscope_get_data(struct exynos_sensors_handlers *handlers,
 		if (input_event.type == EV_REL) {
 			switch (input_event.code) {
 				case REL_RX:
-					event->magnetic.x = lsm330dlc_gyroscope_convert(input_event.value);
+					event->gyro.x = lsm330dlc_gyroscope_convert(input_event.value);
 					break;
 				case REL_RY:
-					event->magnetic.y = lsm330dlc_gyroscope_convert(input_event.value);
+					event->gyro.y = lsm330dlc_gyroscope_convert(input_event.value);
 					break;
 				case REL_RZ:
-					event->magnetic.z = lsm330dlc_gyroscope_convert(input_event.value);
+					event->gyro.z = lsm330dlc_gyroscope_convert(input_event.value);
 					break;
 				default:
 					continue;
@@ -221,6 +230,10 @@ int lsm330dlc_gyroscope_get_data(struct exynos_sensors_handlers *handlers,
 				event->timestamp = input_timestamp(&input_event);
 		}
 	} while (input_event.type != EV_SYN);
+
+	data->gyro.x = event->gyro.x;
+	data->gyro.y = event->gyro.y;
+	data->gyro.z = event->gyro.z;
 
 	return 0;
 }
