@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Paul Kocialkowski
+ * Copyright (C) 2013 Paul Kocialkowski <contact@paulk.fr>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,13 +21,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <poll.h>
-
-
-
 #include <sys/select.h>
-
-
-
 #include <hardware/sensors.h>
 #include <hardware/hardware.h>
 
@@ -80,10 +74,11 @@ int exynos_sensors_handlers_count = sizeof(exynos_sensors_handlers) /
 	sizeof(struct exynos_sensors_handlers *);
 
 /*
- * Exynos Sensors
+ * SMDK4x12 Sensors
  */
 
-int exynos_sensors_activate(struct sensors_poll_device_t *dev, int handle, int enabled)
+int exynos_sensors_activate(struct sensors_poll_device_t *dev, int handle,
+	int enabled)
 {
 	struct exynos_sensors_device *device;
 	int i;
@@ -104,13 +99,13 @@ int exynos_sensors_activate(struct sensors_poll_device_t *dev, int handle, int e
 
 		if (device->handlers[i]->handle == handle) {
 			if (enabled && device->handlers[i]->activate != NULL) {
-				device->handlers[i]->needed |= EXYNOS_SENSORS_NEEDED_API;
-				if (device->handlers[i]->needed == EXYNOS_SENSORS_NEEDED_API)
+				device->handlers[i]->needed |= SMDK4x12_SENSORS_NEEDED_API;
+				if (device->handlers[i]->needed == SMDK4x12_SENSORS_NEEDED_API)
 					return device->handlers[i]->activate(device->handlers[i]);
 				else
 					return 0;
 			} else if (!enabled && device->handlers[i]->deactivate != NULL) {
-				device->handlers[i]->needed &= ~EXYNOS_SENSORS_NEEDED_API;
+				device->handlers[i]->needed &= ~SMDK4x12_SENSORS_NEEDED_API;
 				if (device->handlers[i]->needed == 0)
 					return device->handlers[i]->deactivate(device->handlers[i]);
 				else
@@ -122,7 +117,8 @@ int exynos_sensors_activate(struct sensors_poll_device_t *dev, int handle, int e
 	return -1;
 }
 
-int exynos_sensors_set_delay(struct sensors_poll_device_t *dev, int handle, int64_t ns)
+int exynos_sensors_set_delay(struct sensors_poll_device_t *dev, int handle,
+	int64_t ns)
 {
 	struct exynos_sensors_device *device;
 	int i;
@@ -295,7 +291,7 @@ struct sensors_module_t HAL_MODULE_INFO_SYM = {
 		.version_major = 1,
 		.version_minor = 0,
 		.id = SENSORS_HARDWARE_MODULE_ID,
-		.name = "Exynos Sensors",
+		.name = "SMDK4x12 Sensors",
 		.author = "Paul Kocialkowski",
 		.methods = &exynos_sensors_module_methods,
 	},
