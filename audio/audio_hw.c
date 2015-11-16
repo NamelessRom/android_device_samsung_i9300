@@ -2647,12 +2647,6 @@ static int adev_open_input_stream(struct audio_hw_device *dev,
     struct m0_stream_in *in;
     int ret;
 
-    /* Respond with a request for stereo if a different format is given. */
-    if (config->channel_mask != AUDIO_CHANNEL_IN_STEREO) {
-        config->channel_mask = AUDIO_CHANNEL_IN_STEREO;
-        return -EINVAL;
-    }
-
     int channel_count = popcount(config->channel_mask);
 
     *stream_in = NULL;
