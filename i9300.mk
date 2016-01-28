@@ -35,17 +35,14 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/tiny_hw.xml:system/etc/sound/m0
 
-# Camera
-PRODUCT_PACKAGES += \
-    camera.smdk4x12
-
 # Sensors
 PRODUCT_PACKAGES += \
     sensors.smdk4x12
 
 # Gps
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/gps.xml:system/etc/gps.xml
+    $(LOCAL_PATH)/configs/gps.xml:system/etc/gps.xml \
+    $(LOCAL_PATH)/gps_daemon.sh:system/bin/gps_daemon.sh
 
 # Product specific Packages
 PRODUCT_PACKAGES += \
@@ -54,13 +51,23 @@ PRODUCT_PACKAGES += \
     SamsungServiceMode \
     tinyplay
 
+# RIL
+PRODUCT_PACKAGES += \
+	libsamsung_symbols \
+	ril-wrapper
+
 # NFC
 PRODUCT_PACKAGES += \
-    nfc.exynos4 \
+	nfc.exynos4 \
     libnfc \
     libnfc_jni \
     Nfc \
     Tag
+
+# Camera
+PRODUCT_PACKAGES += \
+    camera.smdk4x12 \
+    Snap
 
 PRODUCT_COPY_FILES += \
     packages/apps/Nfc/migrate_nfc.txt:system/etc/updatecmds/migrate_nfc.txt \
@@ -80,16 +87,17 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     com.android.nfc_extras
 
+$(call inherit-product, vendor/nameless/config/nfc_enhanced.mk)
+
 # RIL
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.telephony.ril_class=SamsungExynos4RIL \
-    mobiledata.interfaces=pdp0,gprs,ppp0,rmnet0,rmnet1 \
     ro.telephony.call_ring.multiple=false \
     ro.telephony.call_ring.delay=3000
 
 # These are the hardware-specific features
 PRODUCT_COPY_FILES += \
-    frameworks/native/data/etc/handheld_core_hardware.xml:system/etc/permissions/handheld_core_hardware.xml \
+	frameworks/native/data/etc/handheld_core_hardware.xml:system/etc/permissions/handheld_core_hardware.xml \
     frameworks/native/data/etc/android.hardware.telephony.gsm.xml:system/etc/permissions/android.hardware.telephony.gsm.xml
 
 $(call inherit-product-if-exists, vendor/samsung/i9300/i9300-vendor.mk)
