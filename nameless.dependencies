@@ -1,8 +1,33 @@
 [
     {
-        "remote": "github",
-        "repository": "NamelessRom/android_device_samsung_smdk4412-common",
+        "repository":  "CyanogenMod/proprietary_vendor_samsung",
+        "target_path": "vendor/samsung",
+        "branch":      "cm-13.0"
+    },
+    {
+        "repository":  "CyanogenMod/android_device_samsung_smdk4412-common",
         "target_path": "device/samsung/smdk4412-common",
-        "revision": "n-3.0"
+        "branch":      "cm-13.0"
+    },
+    {
+        "repository":  "CyanogenMod/android_kernel_samsung_smdk4412",
+        "target_path": "kernel/samsung/smdk4412",
+        "branch":      "cm-13.0"
+    },
+    {
+        "repository":  "CyanogenMod/android_external_stlport",
+        "target_path": "external/stlport",
+        "branch":      "cm-13.0"
+    },
+    {
+        "repository":  "CyanogenMod/android_hardware_samsung",
+        "target_path": "hardware/samsung",
+        "branch":      "cm-13.0"
+    },
+    {
+        "repository":  "CyanogenMod/android_packages_apps_SamsungServiceMode",
+        "target_path": "packages/apps/SamsungServiceMode",
+        "branch":      "cm-13.0"
     }
 ]
+
