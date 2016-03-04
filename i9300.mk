@@ -49,6 +49,7 @@ PRODUCT_COPY_FILES += \
 
 # Product specific Packages
 PRODUCT_PACKAGES += \
+    libril_shim \
     libsecril-client \
     libsecril-client-sap \
     SamsungServiceMode \
