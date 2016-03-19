@@ -2455,16 +2455,31 @@ static int adev_open_output_stream(struct audio_hw_device *dev,
     out->sup_channel_masks[0] = AUDIO_CHANNEL_OUT_STEREO;
     out->channel_mask = AUDIO_CHANNEL_OUT_STEREO;
 
-    if (ladev->outputs[OUTPUT_DEEP_BUF] != NULL) {
-        ret = -ENOSYS;
-        goto err_open;
+    if (flags & AUDIO_OUTPUT_FLAG_DEEP_BUFFER) {
+        if (ladev->outputs[OUTPUT_DEEP_BUF] != NULL) {
+            ret = -ENOSYS;
+            goto err_open;
+        }
+        output_type = OUTPUT_DEEP_BUF;
+        out->channel_mask = AUDIO_CHANNEL_OUT_STEREO;
+        out->stream.common.get_buffer_size = out_get_buffer_size_deep_buffer;
+        out->stream.common.get_sample_rate = out_get_sample_rate;
+        out->stream.get_latency = out_get_latency_deep_buffer;
+        out->stream.write = out_write_deep_buffer;
+    } else {
+        if (ladev->outputs[OUTPUT_LOW_LATENCY] != NULL) {
+            ret = -ENOSYS;
+            goto err_open;
+        }
+        /* NOTE: This gets called with the highest (or last?)
+         *       sampling rate listed in the audio policy */
+        output_type = OUTPUT_LOW_LATENCY;
+        out->stream.common.get_buffer_size = out_get_buffer_size_low_latency;
+        out->stream.common.get_sample_rate = out_get_sample_rate;
+        out->stream.get_latency = out_get_latency_low_latency;
+        out->stream.write = out_write_low_latency;
+        out->stream.set_volume = out_set_volume;
     }
-    output_type = OUTPUT_DEEP_BUF;
-    out->channel_mask = AUDIO_CHANNEL_OUT_STEREO;
-    out->stream.common.get_buffer_size = out_get_buffer_size_deep_buffer;
-    out->stream.common.get_sample_rate = out_get_sample_rate;
-    out->stream.get_latency = out_get_latency_deep_buffer;
-    out->stream.write = out_write_deep_buffer;
 
     ret = create_resampler(DEFAULT_OUT_SAMPLING_RATE,
                            MM_FULL_POWER_SAMPLING_RATE,
