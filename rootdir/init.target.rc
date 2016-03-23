@@ -49,3 +49,7 @@ service gpsd /system/bin/gpsd -c /system/etc/gps.xml
     user gps
     group system inet sdcard_rw
     seclabel u:r:gpsd:s0
+    disabled
+
+on property:init.svc.bootanim=stopped
+    start gpsd
