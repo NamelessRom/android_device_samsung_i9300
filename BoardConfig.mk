@@ -19,12 +19,8 @@
 
 -include device/samsung/smdk4412-common/BoardCommonConfig.mk
 
-# RIL
-BOARD_PROVIDES_LIBRIL := true
-BOARD_PROVIDES_RILD := true
-BOARD_MODEM_TYPE := xmm6262
-BOARD_RIL_CLASS := ../../../hardware/samsung/ril
-COMMON_GLOBAL_CFLAGS += -DDISABLE_ASHMEM_TRACKING
+# Assert
+TARGET_OTA_ASSERT_DEVICE := m0,i9300,GT-I9300
 
 # Bluetooth
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/samsung/i9300/bluetooth
@@ -37,11 +33,18 @@ TARGET_KERNEL_CONFIG := custom_i9300_defconfig
 TARGET_RECOVERY_FSTAB := device/samsung/i9300/rootdir/fstab.smdk4x12
 RECOVERY_FSTAB_VERSION := 2
 
-# assert
-TARGET_OTA_ASSERT_DEVICE := m0,i9300,GT-I9300
+# RIL
+BOARD_PROVIDES_LIBRIL := true
+BOARD_PROVIDES_RILD := true
+BOARD_MODEM_TYPE := xmm6262
+BOARD_RIL_CLASS := ../../../hardware/samsung/ril
+COMMON_GLOBAL_CFLAGS += -DDISABLE_ASHMEM_TRACKING
 
 # own headers
 TARGET_SPECIFIC_HEADER_PATH := device/samsung/i9300/include
+
+# SELinux
+BOARD_SEPOLICY_DIRS += device/samsung/i9300/sepolicy
 
 # inherit from the proprietary version
 -include vendor/samsung/i9300/BoardConfigVendor.mk
