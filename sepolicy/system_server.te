@@ -36,3 +36,6 @@ allow system_server gps_data_file:sock_file create_file_perms;
 allow system_server gps_data_file:dir rw_dir_perms;
 allow system_server gps_data_file:file rw_file_perms;
 
+# wifi firmware
+allow system_server firmware_exynos:dir { open read search };
+allow system_server firmware_exynos:file { open read };
