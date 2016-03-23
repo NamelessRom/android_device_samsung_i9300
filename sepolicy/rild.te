@@ -18,3 +18,5 @@ allow rild efs_file:file { read open write setattr };
 
 allow rild efs_device_file:dir create_dir_perms;
 allow rild efs_device_file:file { setattr create create_file_perms };
+
+allow rild sysfs_radio:file { read write open };
