@@ -43,12 +43,13 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     sensors.smdk4x12
 
-# Gps
+# GPS
 PRODUCT_PACKAGES += \
     libgpsd-compat
 
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/gps.xml:system/etc/gps.xml
+    $(LOCAL_PATH)/configs/gps.xml:system/etc/gps.xml \
+    $(LOCAL_PATH)/configs/gps_daemon.sh:system/bin/gps_daemon.sh
 
 # Product specific Packages
 PRODUCT_PACKAGES += \
